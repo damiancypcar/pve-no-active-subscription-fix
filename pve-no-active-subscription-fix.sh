@@ -2,7 +2,7 @@
 # ----------------------------------------------------------
 # Author:          damiancypcar
 # Modified:        2024-02-09
-# Version:         1.2
+# Version:         1.3
 # PVE Version:     7/8
 # Desc:            Fix Proxmox "no active subscription"
 # ----------------------------------------------------------
@@ -49,5 +49,5 @@ systemctl restart pveproxy.service
 
 echo -e '\n>> Updating system...'
 apt update
-apt dist-upgrade -y
+apt dist-upgrade
 echo -e '\n>> Done. Please reboot!\n'
