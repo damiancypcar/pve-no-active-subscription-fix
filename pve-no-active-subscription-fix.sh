@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------
 # Author:          damiancypcar
-# PVE Version:     7+
 # Modified:        2024-02-09
-# Version:         1.1
+# Version:         1.2
+# PVE Version:     7/8
 # Desc:            Fix Proxmox "no active subscription"
 # ----------------------------------------------------------
 
@@ -22,20 +22,24 @@ if [ $(id -u) -ne 0 ]; then
 fi
 
 # version check
-if [ "${PVE_VER}" -ge 7 ]; then
-    echo "Proxmox VE version: ${PVE_VER}"
+echo "Proxmox VE version: ${PVE_VER}"
+if [ "${PVE_VER}" -eq 7 ]; then
+    echo -e '\n>> Fixing PVE repo...'
+    sed -i "s/^deb/#deb/g" ${ORIG_PVE}
+    echo 'deb http://download.proxmox.com/debian/pve bullseye pve-no-subscription' > ${NEW_PVE}
+
+elif [ "${PVE_VER}" -eq 8 ]; then
+    echo -e '\n>> Fixing PVE repo...'
+    sed -i "s/^deb/#deb/g" ${ORIG_PVE}
+    echo 'deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription' > ${NEW_PVE}
+
+    echo '>> Fixing Ceph repo...'
+    sed -i "s/^deb/#deb/g" ${ORIG_CEPH}
+    echo 'deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription' > ${NEW_CEPH}
 else
-    echo "Require Proxmox VE version 7 or higher"
+    echo "Require Proxmox VE version 7 or 8"
     exit 1
 fi
-
-echo -e '\n>> Fixing PVE repo...'
-sed -i "s/^deb/#deb/g" ${ORIG_PVE}
-echo 'deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription' > ${NEW_PVE}
-
-echo '>> Fixing Ceph repo...'
-sed -i "s/^deb/#deb/g" ${ORIG_CEPH}
-echo 'deb http://download.proxmox.com/debian/ceph-quincy bookworm no-subscription' > ${NEW_CEPH}
 
 # disable "no active subscription" warning in Proxmox GUI
 echo -e '\n>> Disabling "no active subscription" warning message...'
