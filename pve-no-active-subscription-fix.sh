@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ----------------------------------------------------------
 # Author:          damiancypcar
-# Modified:        2024-02-09
-# Version:         1.3
+# Modified:        2024-05-24
+# Version:         1.4
 # PVE Version:     7/8
 # Desc:            Fix Proxmox "no active subscription"
 # ----------------------------------------------------------
@@ -22,7 +22,7 @@ if [ $(id -u) -ne 0 ]; then
 fi
 
 # version check
-echo "Proxmox VE version: ${PVE_VER}"
+echo -e "\nProxmox VE version: ${PVE_VER}"
 if [ "${PVE_VER}" -eq 7 ]; then
     echo -e '\n>> Fixing PVE repo...'
     sed -i "s/^deb/#deb/g" ${ORIG_PVE}
@@ -43,8 +43,8 @@ fi
 
 # disable "no active subscription" warning in Proxmox GUI
 echo -e '\n>> Disabling "no active subscription" warning message...'
-echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i.bak '/data.status/{s/\!//;s/[Aa]ctive/NoMoreNagging/}' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/80pve-no-active-subscription-fix
-apt --reinstall install proxmox-widget-toolkit
+echo "DPkg::Post-Invoke { \"dpkg -V proxmox-widget-toolkit | grep -q '/proxmoxlib\.js$'; if [ \$? -eq 1 ]; then { echo 'Removing subscription nag from UI...'; sed -i.bak -E 's/(checked_command:\ function\(orig_cmd\) \{)/\1\n\torig_cmd\(\);\n\treturn;/' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js; }; fi\"; };" > /etc/apt/apt.conf.d/80pve-no-active-subscription-fix
+apt update && apt --reinstall install proxmox-widget-toolkit
 systemctl restart pveproxy.service
 
 echo -e '\n>> Updating system...'
